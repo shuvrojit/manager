@@ -1,26 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from './test/test-utils';
-import App from './App';
+import { routes } from './routes';
 
-describe('App', () => {
-  it('renders welcome message', () => {
-    render(<App />);
+describe('App Routing', () => {
+  it('renders home page at root route', () => {
+    render(<>{routes[0].element}</>, { initialEntries: ['/'] });
+    expect(screen.getByRole('heading', { name: /home/i })).toBeInTheDocument();
+  });
 
-    // Using getByRole is preferred for better accessibility testing
-    const heading = screen.getByRole('heading', { name: /welcome to react/i });
+  it('renders about page at /about route', () => {
+    render(<>{routes[1].element}</>, { initialEntries: ['/about'] });
+    expect(screen.getByRole('heading', { name: /about/i })).toBeInTheDocument();
+  });
 
-    expect(heading).toBeInTheDocument();
+  it('renders not found page for unknown routes', () => {
+    render(<>{routes[2].element}</>, { initialEntries: ['/unknown'] });
+    expect(screen.getByRole('heading', { name: /not found/i })).toBeInTheDocument();
   });
 
   it('matches snapshot', () => {
-    const { container } = render(<App />);
+    const { container } = render(<>{routes[0].element}</>, { initialEntries: ['/'] });
     expect(container).toMatchSnapshot();
-  });
-
-  // Example of testing CSS
-  it('is visible', () => {
-    render(<App />);
-    const heading = screen.getByRole('heading', { name: /welcome to react/i });
-    expect(heading).toBeVisible();
   });
 });
