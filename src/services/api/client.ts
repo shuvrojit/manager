@@ -1,4 +1,4 @@
-interface RequestOptions {
+export interface RequestOptions {
   params?: Record<string, string>;
   body?: unknown;
   headers?: Record<string, string>;

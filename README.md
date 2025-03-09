@@ -1,13 +1,120 @@
-# React + TypeScript + Vite
+# AI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application built with TypeScript, Vite, React Router, and comprehensive testing. This project provides a robust starting point for AI-focused frontend applications.
 
-Currently, two official plugins are available:
+## Technologies
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- TypeScript
+- Vite 6
+- React Router 7
+- Testing Library
+- Vitest
+- ESLint + Prettier
 
-## Expanding the ESLint configuration
+## Project Structure
+
+```
+src/
+├── components/    # Reusable UI components
+├── hooks/         # Custom React hooks
+├── pages/         # Page components (routed views)
+├── services/      # API and other services
+│   └── api/       # API client implementation
+└── test/          # Test utilities and setup
+```
+
+## Available Scripts
+
+```bash
+# Development
+npm run dev         # Start development server
+npm run build       # Build for production
+npm run preview     # Preview production build
+
+# Testing
+npm test           # Run all tests
+npm run test:watch # Run tests in watch mode
+npm run coverage   # Generate test coverage report
+
+# Linting & Formatting
+npm run lint       # Run ESLint
+npm run lint:fix   # Fix ESLint issues
+npm run format     # Format code with Prettier
+```
+
+## Routing
+
+This project uses React Router v7 for navigation. Routes are defined in `src/routes.tsx` and include:
+
+- Home (/)
+- About (/about)
+- NotFound (404 page)
+
+## API Integration
+
+The project includes a comprehensive API client implementation and a custom `useApi` hook that provides a clean interface for making HTTP requests.
+
+### Using the API Hook
+
+The `useApi` hook manages loading states, error handling, and data persistence. It supports all standard HTTP methods:
+
+```tsx
+import { useApi } from './hooks/useApi';
+import { useEffect } from 'react';
+
+function DataComponent() {
+  const { get, post, put, patch, delete: deleteRequest, data, isLoading, error } = useApi();
+  
+  useEffect(() => {
+    // Fetch data on component mount
+    get('/api/items');
+  }, []);
+  
+  const handleSubmit = async (formData) => {
+    try {
+      await post('/api/items', { 
+        body: formData 
+      });
+      // Handle successful submission
+    } catch (err) {
+      // Error already tracked in the hook's state
+    }
+  };
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      {data && (
+        <ul>
+          {data.map(item => (
+            <li key={item.id}>{item.name}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+## Testing
+
+This project uses Vitest and Testing Library for testing. Tests are co-located with their implementation files or placed in the `__snapshots__` directory.
+
+### Running Tests
+
+```bash
+npm test          # Run all tests
+npm run coverage  # Generate test coverage report
+```
+
+## Git Hooks
+
+The project uses Husky and lint-staged to run tests and linting before each commit, ensuring code quality.
+
+## Expanding the ESLint Configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
