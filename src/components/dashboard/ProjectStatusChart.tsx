@@ -53,16 +53,13 @@ const STATUS_COLORS = {
 
 export function ProjectStatusChart({ projects }: { projects: Project[] }) {
   const data: StatusData[] = Object.entries(
-    projects.reduce(
-      (acc, project) => {
-        acc[project.status] = (acc[project.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    )
+    projects.reduce<Record<string, number>>((acc, project) => {
+      acc[project.status] = (acc[project.status] || 0) + 1;
+      return acc;
+    }, {})
   ).map(([name, value]) => ({
     name,
-    value,
+    value: value as number,
     color: STATUS_COLORS[name as keyof typeof STATUS_COLORS],
   }));
 

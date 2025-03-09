@@ -1,8 +1,11 @@
-import { FC } from 'react';
+import { FC, useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Project } from '../data/types';
+import { Project, Task, TaskColumn } from '../data/types';
+import { DropResult } from '@hello-pangea/dnd';
 import { projects, users } from '../data';
+import { TaskBoard } from '../components/project/TaskBoard';
+import { TaskModal } from '../components/project/TaskModal';
 import { ProjectDropdown } from '../components/project/ProjectDropdown';
 import {
   FaRegCalendarAlt,
@@ -13,6 +16,10 @@ import {
 
 const Container = styled.div`
   padding: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 `;
 
 const Header = styled.div`
@@ -21,6 +28,7 @@ const Header = styled.div`
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 const Title = styled.h1`
@@ -44,6 +52,7 @@ const BackButton = styled.button`
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
+  flex-shrink: 0;
 
   &:hover {
     background-color: #e5e7eb;
@@ -61,13 +70,17 @@ const Card = styled.div`
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
+  max-width: 100%;
+  overflow-wrap: break-word;
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 `;
 
 const StatusBadge = styled.span<{ status: Project['status'] }>`
@@ -93,6 +106,7 @@ const DateInfo = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  max-width: 100%;
 `;
 
 const DateItem = styled.div`
@@ -103,10 +117,12 @@ const DateItem = styled.div`
   background-color: #f9fafb;
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
+  flex-shrink: 0;
 
   svg {
     margin-right: 0.5rem;
     font-size: 1rem;
+    flex-shrink: 0;
   }
 `;
 
@@ -140,6 +156,7 @@ const DueDateItem = styled(DateItem)<{ daysUntilDue?: number }>`
 
 const Section = styled.div`
   margin-bottom: 1.5rem;
+  max-width: 100%;
 `;
 
 const SectionTitle = styled.h3`
@@ -151,12 +168,15 @@ const SectionTitle = styled.h3`
 
 const Description = styled.p`
   color: #4b5563;
+  overflow-wrap: break-word;
+  word-break: break-word;
 `;
 
 const ProgressSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 100%;
 `;
 
 const ProgressHeader = styled.div`
@@ -195,11 +215,191 @@ const getDaysUntilDueDate = (endDate: string | undefined): number | undefined =>
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
 
+const TeamMembersSection = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+`;
+
+const MemberCard = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f3f4f6;
+  border-radius: 0.375rem;
+  max-width: 100%;
+`;
+
+const MemberAvatar = styled.img`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+`;
+
+const MemberInfo = styled.div`
+  min-width: 0;
+`;
+
+const MemberName = styled.div`
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const MemberRole = styled.div`
+  font-size: 0.75rem;
+  color: #6b7280;
+`;
+
+const TagsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+`;
+
+const Tag = styled.span`
+  padding: 0.25rem 0.75rem;
+  background: #e5e7eb;
+  color: #4b5563;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+`;
+
+interface ProjectTask extends Task {
+  projectId: string;
+}
+
 export const ProjectDetailPage: FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
+  const [selectedColumnId, setSelectedColumnId] = useState<string>('');
+  const [tasks, setTasks] = useState<ProjectTask[]>(() => {
+    const savedTasks = localStorage.getItem(`project_${id}_tasks`);
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
 
   const project = projects.find((p) => p.id === id);
+
+  // Save tasks to localStorage whenever they change
+  useEffect(() => {
+    if (project) {
+      localStorage.setItem(`project_${project.id}_tasks`, JSON.stringify(tasks));
+    }
+  }, [tasks, project]);
+
+  const columns = useMemo<TaskColumn[]>(
+    () => [
+      {
+        id: 'todo',
+        title: 'To Do',
+        status: 'todo',
+        tasks: tasks.filter((task) => task.status === 'todo' && task.projectId === id),
+      },
+      {
+        id: 'in-progress',
+        title: 'In Progress',
+        status: 'in-progress',
+        tasks: tasks.filter((task) => task.status === 'in-progress' && task.projectId === id),
+      },
+      {
+        id: 'review',
+        title: 'In Review',
+        status: 'review',
+        tasks: tasks.filter((task) => task.status === 'review' && task.projectId === id),
+      },
+      {
+        id: 'done',
+        title: 'Done',
+        status: 'done',
+        tasks: tasks.filter((task) => task.status === 'done' && task.projectId === id),
+      },
+    ],
+    [tasks, id]
+  );
+
+  // Calculate project progress based on completed tasks
+  useEffect(() => {
+    if (project && tasks.length > 0) {
+      const completedTasks = tasks.filter((task) => task.status === 'done').length;
+      const progress = Math.round((completedTasks / tasks.length) * 100);
+
+      // Update project progress in localStorage
+      const updatedProject = { ...project, progress };
+      const allProjects = projects.map((p) => (p.id === project.id ? updatedProject : p));
+      localStorage.setItem('projects', JSON.stringify(allProjects));
+    }
+  }, [tasks, project]);
+
+  const handleTaskMove = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const sourceColumnId = result.source.droppableId;
+    const destColumnId = result.destination.droppableId;
+    const taskId = result.draggableId;
+
+    // Find the task that was moved
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    // Update the task's status based on the destination column
+    const newStatus = columns.find((col) => col.id === destColumnId)?.status;
+    if (!newStatus) return;
+
+    setTasks((prevTasks) =>
+      prevTasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              status: newStatus,
+            }
+          : t
+      )
+    );
+  };
+
+  const handleAddTask = (columnId: string) => {
+    setSelectedTask(undefined);
+    setSelectedColumnId(columnId);
+    setIsModalOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setSelectedColumnId(task.status);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+  };
+
+  const handleSaveTask = (taskData: Partial<Task>) => {
+    if (selectedTask) {
+      // Edit existing task
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === selectedTask.id ? { ...t, ...taskData } : t))
+      );
+    } else {
+      // Add new task
+      setTasks((prevTasks) => [
+        ...prevTasks,
+        {
+          ...taskData,
+          id: crypto.randomUUID(),
+          projectId: id!,
+          status: selectedColumnId as Task['status'],
+          createdAt: new Date().toISOString(),
+        } as ProjectTask,
+      ]);
+    }
+  };
 
   if (!project) {
     return (
@@ -247,7 +447,7 @@ export const ProjectDetailPage: FC = () => {
           <DateInfo>
             <DateItem>
               <FaRegCalendarAlt />
-              Started: {new Date(project.startDate).toLocaleDateString()}
+              <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
             </DateItem>
             {project.endDate && (
               <DueDateItem daysUntilDue={daysUntilDue}>
@@ -258,19 +458,21 @@ export const ProjectDetailPage: FC = () => {
                 ) : (
                   <FaCalendarCheck />
                 )}
-                Due: {new Date(project.endDate).toLocaleDateString()}
-                {daysUntilDue !== undefined && daysUntilDue <= 3 && (
-                  <span style={{ marginLeft: '0.5rem' }}>
-                    (
-                    {daysUntilDue === 0
-                      ? 'Due today!'
-                      : `${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''} left!`}
-                    )
-                  </span>
-                )}
-                {daysUntilDue !== undefined && daysUntilDue > 3 && daysUntilDue <= 7 && (
-                  <span style={{ marginLeft: '0.5rem' }}>({daysUntilDue} days left)</span>
-                )}
+                <span>
+                  Due: {new Date(project.endDate).toLocaleDateString()}
+                  {daysUntilDue !== undefined && daysUntilDue <= 3 && (
+                    <span style={{ marginLeft: '0.5rem' }}>
+                      (
+                      {daysUntilDue === 0
+                        ? 'Due today!'
+                        : `${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''} left!`}
+                      )
+                    </span>
+                  )}
+                  {daysUntilDue !== undefined && daysUntilDue > 3 && daysUntilDue <= 7 && (
+                    <span style={{ marginLeft: '0.5rem' }}>({daysUntilDue} days left)</span>
+                  )}
+                </span>
               </DueDateItem>
             )}
           </DateInfo>
@@ -293,58 +495,29 @@ export const ProjectDetailPage: FC = () => {
 
         <Section>
           <SectionTitle>Team Members</SectionTitle>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <TeamMembersSection>
             {project.team.map((userId) => {
               const user = users.find((u) => u.id === userId);
               return user ? (
-                <div
-                  key={user.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0.5rem',
-                    background: '#f3f4f6',
-                    borderRadius: '0.375rem',
-                  }}
-                >
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    style={{
-                      width: '2rem',
-                      height: '2rem',
-                      borderRadius: '50%',
-                      marginRight: '0.5rem',
-                    }}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 500 }}>{user.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{user.role}</div>
-                  </div>
-                </div>
+                <MemberCard key={user.id}>
+                  <MemberAvatar src={user.avatar} alt={user.name} />
+                  <MemberInfo>
+                    <MemberName>{user.name}</MemberName>
+                    <MemberRole>{user.role}</MemberRole>
+                  </MemberInfo>
+                </MemberCard>
               ) : null;
             })}
-          </div>
+          </TeamMembersSection>
         </Section>
 
         <Section>
           <SectionTitle>Tags</SectionTitle>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <TagsContainer>
             {project.tags.map((tag) => (
-              <span
-                key={tag}
-                style={{
-                  padding: '0.25rem 0.75rem',
-                  background: '#e5e7eb',
-                  color: '#4b5563',
-                  borderRadius: '9999px',
-                  fontSize: '0.875rem',
-                }}
-              >
-                {tag}
-              </span>
+              <Tag key={tag}>{tag}</Tag>
             ))}
-          </div>
+          </TagsContainer>
         </Section>
 
         {project.budget && (
@@ -356,6 +529,27 @@ export const ProjectDetailPage: FC = () => {
           </Section>
         )}
       </Card>
+
+      <Section>
+        <SectionTitle>Tasks</SectionTitle>
+        <TaskBoard
+          columns={columns}
+          users={users}
+          onTaskMove={handleTaskMove}
+          onAddTask={handleAddTask}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+        />
+      </Section>
+
+      <TaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveTask}
+        task={selectedTask}
+        users={users}
+        columnId={selectedColumnId}
+      />
     </Container>
   );
 };

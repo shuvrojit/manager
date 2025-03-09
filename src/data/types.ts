@@ -37,6 +37,31 @@ export interface Project {
   budget?: number;
   timeSpent?: string;
   timeRemaining?: string;
+  tasks?: ProjectTask[];
+}
+
+export interface ProjectTask extends Task {
+  projectId: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in-progress' | 'review' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  assignee?: string; // User ID
+  createdAt: string;
+  dueDate?: string;
+  labels?: string[];
+  comments?: Comment[];
+}
+
+export interface Comment {
+  id: string;
+  text: string;
+  userId: string;
+  createdAt: string;
 }
 
 export interface Team {
@@ -45,4 +70,11 @@ export interface Team {
   description: string;
   members: string[]; // User IDs
   lead: string; // User ID
+}
+
+export interface TaskColumn {
+  id: string;
+  title: string;
+  status: Task['status'];
+  tasks: Task[];
 }
