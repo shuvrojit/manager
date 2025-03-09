@@ -33,6 +33,12 @@
 - ESLint (linting)
 - Prettier (formatting)
 - Vitest (testing)
+- styled-components (CSS-in-JS styling)
+
+### UI Libraries & Icons
+- @mui/icons-material (Material UI icons)
+- react-icons (Comprehensive icon library)
+- @heroicons/react (Heroicons collection)
 
 ### Testing Tools
 - Vitest
