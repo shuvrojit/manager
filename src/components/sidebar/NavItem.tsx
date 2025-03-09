@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { keyframes } from 'styled-components';
+import { Link, useLocation } from 'react-router-dom';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -77,31 +78,27 @@ const Badge = styled.div`
 export interface NavItemProps {
   icon: React.ReactNode;
   label: string;
-  active?: boolean;
+  to: string;
   badge?: string | number;
   collapsed?: boolean;
 }
 
-export const NavItem: React.FC<NavItemProps> = ({
-  icon,
-  label,
-  active = false,
-  badge,
-  collapsed = false,
-}) => {
+export const NavItem: React.FC<NavItemProps> = ({ icon, label, to, badge, collapsed = false }) => {
   const [showTooltip, setShowTooltip] = React.useState(false);
 
   return (
-    <NavItemContainer
-      active={active}
-      collapsed={collapsed}
-      onMouseEnter={() => collapsed && setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      <IconWrapper>{icon}</IconWrapper>
-      <Label collapsed={collapsed}>{label}</Label>
-      {badge && !collapsed && <Badge>{badge}</Badge>}
-      {collapsed && showTooltip && <Tooltip>{label}</Tooltip>}
-    </NavItemContainer>
+    <Link to={to} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <NavItemContainer
+        active={useLocation().pathname === to}
+        collapsed={collapsed}
+        onMouseEnter={() => collapsed && setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        <IconWrapper>{icon}</IconWrapper>
+        <Label collapsed={collapsed}>{label}</Label>
+        {badge && !collapsed && <Badge>{badge}</Badge>}
+        {collapsed && showTooltip && <Tooltip>{label}</Tooltip>}
+      </NavItemContainer>
+    </Link>
   );
 };

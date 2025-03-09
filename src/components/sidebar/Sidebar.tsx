@@ -6,7 +6,9 @@ import { NavLinks } from './NavLinks';
 import { UserProfile } from './UserProfile';
 
 const SidebarContainer = styled.aside<{ collapsed: boolean }>`
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
   width: ${(props) => (props.collapsed ? '80px' : '280px')};
@@ -16,7 +18,7 @@ const SidebarContainer = styled.aside<{ collapsed: boolean }>`
   font-family: 'Inter', sans-serif;
   overflow: hidden;
   transition: width 0.3s ease;
-  position: relative;
+  z-index: 50;
 `;
 
 const ToggleButton = styled.button<{ collapsed: boolean }>`
@@ -52,12 +54,21 @@ const NavSection = styled.div`
   gap: 10px;
 `;
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onCollapse: (collapsed: boolean) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onCollapse }) => {
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleCollapse = (value: boolean) => {
+    setCollapsed(value);
+    onCollapse(value);
+  };
 
   return (
     <SidebarContainer collapsed={collapsed}>
-      <ToggleButton collapsed={collapsed} onClick={() => setCollapsed(!collapsed)}>
+      <ToggleButton collapsed={collapsed} onClick={() => handleCollapse(!collapsed)}>
         <AiOutlineLeft size={16} />
       </ToggleButton>
       <LogoSection title="Untitled" collapsed={collapsed} />

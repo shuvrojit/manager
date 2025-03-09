@@ -41,6 +41,7 @@ export const BottomLinks: React.FC<BottomLinksProps> = ({ collapsed = false }) =
         </svg>
       ),
       label: 'Notifications',
+      to: '/notifications',
       badge: 12,
     },
     {
@@ -71,6 +72,7 @@ export const BottomLinks: React.FC<BottomLinksProps> = ({ collapsed = false }) =
         </svg>
       ),
       label: 'Support',
+      to: '/support',
     },
     {
       icon: (
@@ -100,6 +102,7 @@ export const BottomLinks: React.FC<BottomLinksProps> = ({ collapsed = false }) =
         </svg>
       ),
       label: 'Settings',
+      to: '/settings',
     },
   ];
 
@@ -110,7 +113,7 @@ export const BottomLinks: React.FC<BottomLinksProps> = ({ collapsed = false }) =
           key={item.label}
           icon={item.icon}
           label={item.label}
-          active={item.active}
+          to={item.to}
           badge={item.badge}
           collapsed={collapsed}
         />

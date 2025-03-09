@@ -2,12 +2,19 @@
   min-height: 100vh;
   display: flex;
   background-color: #ffffff;
+  position: relative;
 }
 
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-left: var(--sidebar-width, 280px);
+  transition: margin-left 0.3s ease;
+}
+
+.sidebarCollapsed {
+  --sidebar-width: 80px;
 }
 
 .main {

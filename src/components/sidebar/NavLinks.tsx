@@ -20,15 +20,17 @@ export const NavLinks: React.FC<NavLinksProps> = ({ collapsed = false }) => {
     {
       icon: <AiOutlineHome size={20} />,
       label: 'Home',
-      active: true,
+      to: '/',
     },
     {
       icon: <GoProject size={20} />,
       label: 'Projects',
+      to: '/projects',
     },
     {
       icon: <IoSettingsOutline size={20} />,
       label: 'Settings',
+      to: '/settings',
     },
   ];
 
@@ -39,7 +41,7 @@ export const NavLinks: React.FC<NavLinksProps> = ({ collapsed = false }) => {
           key={item.label}
           icon={item.icon}
           label={item.label}
-          active={item.active}
+          to={item.to}
           collapsed={collapsed}
         />
       ))}
