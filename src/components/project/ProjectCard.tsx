@@ -1,18 +1,22 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { FaRegCalendarAlt, FaRegCheckCircle } from 'react-icons/fa';
+import styled, { keyframes } from 'styled-components';
+import { FaRegCalendarAlt, FaRegCheckCircle, FaHourglassHalf, FaClock } from 'react-icons/fa';
 import { BsClockHistory, BsPauseFill, BsPlayFill } from 'react-icons/bs';
 import { IoIosStats } from 'react-icons/io';
 
 const Card = styled(Link)`
   display: block;
-  padding: 1.5rem;
+  padding: 1rem; /* Reduced from 1.5rem */
   background: white;
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s;
+  /* Removed width and margin to let the grid control sizing */
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
 
   &:hover {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -24,8 +28,9 @@ const Card = styled(Link)`
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem; /* Reduced from 1rem */
+  white-space: nowrap;
 `;
 
 const Title = styled.h3`
@@ -33,6 +38,11 @@ const Title = styled.h3`
   font-weight: 600;
   color: #111827;
   transition: color 0.3s;
+  margin-right: 1rem;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:hover {
     color: #2563eb;
@@ -46,6 +56,8 @@ const StatusBadge = styled.span<{ status: Project['status'] }>`
   font-weight: 500;
   display: flex;
   align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
 
   ${({ status }) => {
     switch (status) {
@@ -55,6 +67,8 @@ const StatusBadge = styled.span<{ status: Project['status'] }>`
         return 'background-color: #dbeafe; color: #1e40af;';
       case 'on-hold':
         return 'background-color: #fef3c7; color: #92400e;';
+      case 'cancelled':
+        return 'background-color: #fee2e2; color: #b91c1c;';
     }
   }}
 `;
@@ -62,7 +76,7 @@ const StatusBadge = styled.span<{ status: Project['status'] }>`
 const Description = styled.p`
   color: #4b5563;
   font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem; /* Reduced from 1rem */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -72,7 +86,7 @@ const Description = styled.p`
 const ProgressSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem; /* Reduced from 0.75rem */
 `;
 
 const ProgressHeader = styled.div`
@@ -132,15 +146,79 @@ const DateText = styled.span`
   }
 `;
 
-export interface Project {
-  id: string;
-  title: string;
-  status: 'active' | 'completed' | 'on-hold';
-  progress: number;
-  description: string;
-  startDate: string;
-  endDate?: string;
-}
+const pulse = keyframes`
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+const rotate = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const TimeMetricsContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  max-width: 100%;
+`;
+
+const TimeMetric = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background-color: #f9fafb;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const TimeIcon = styled.div`
+  margin-right: 0.5rem;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+`;
+
+const SpentIcon = styled(FaClock)`
+  animation: ${rotate} 10s linear infinite;
+`;
+
+const RemainingIcon = styled(FaHourglassHalf)`
+  animation: ${pulse} 2s ease-in-out infinite;
+`;
+
+const TimeLabel = styled.span`
+  font-weight: 500;
+  margin-right: 0.25rem;
+`;
+
+const TimeValue = styled.span`
+  font-weight: 600;
+  color: #4b5563;
+`;
+
+import { Project } from '../../data/types';
 
 interface ProjectCardProps {
   project: Project;
@@ -150,18 +228,20 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   const getStatusIcon = (status: Project['status']) => {
     switch (status) {
       case 'active':
-        return <BsPlayFill />;
+        return <BsPlayFill style={{ marginRight: '0.25rem' }} />;
       case 'completed':
-        return <FaRegCheckCircle />;
+        return <FaRegCheckCircle style={{ marginRight: '0.25rem' }} />;
       case 'on-hold':
-        return <BsPauseFill />;
+        return <BsPauseFill style={{ marginRight: '0.25rem' }} />;
+      case 'cancelled':
+        return <span style={{ marginRight: '0.25rem' }}>⨯</span>;
     }
   };
 
   return (
     <Card to={`/projects/${project.id}`}>
       <CardHeader>
-        <Title>{project.title}</Title>
+        <Title>{project.name}</Title>
         <StatusBadge status={project.status}>
           {getStatusIcon(project.status)}
           {project.status}
@@ -178,6 +258,24 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
         <ProgressBar>
           <ProgressFill progress={project.progress} />
         </ProgressBar>
+
+        <TimeMetricsContainer>
+          <TimeMetric>
+            <TimeIcon>
+              <SpentIcon />
+            </TimeIcon>
+            <TimeLabel>Time spent:</TimeLabel>
+            <TimeValue>{project.timeSpent || '0h'}</TimeValue>
+          </TimeMetric>
+          <TimeMetric>
+            <TimeIcon>
+              <RemainingIcon />
+            </TimeIcon>
+            <TimeLabel>Remaining:</TimeLabel>
+            <TimeValue>{project.timeRemaining || '0h'}</TimeValue>
+          </TimeMetric>
+        </TimeMetricsContainer>
+
         <DateSection>
           <DateText>
             <FaRegCalendarAlt />

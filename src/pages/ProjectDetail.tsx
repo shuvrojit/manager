@@ -1,7 +1,8 @@
 import { FC } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Project } from '../components/project/ProjectCard';
+import { Project } from '../data/types';
+import { projects, users } from '../data';
 import { ProjectDropdown } from '../components/project/ProjectDropdown';
 
 const Container = styled.div`
@@ -121,41 +122,11 @@ const ProgressFill = styled.div<{ progress: number }>`
   width: ${({ progress }) => `${progress}%`};
 `;
 
-// Mock data - replace with real API call
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    title: 'Website Redesign',
-    status: 'active',
-    progress: 75,
-    description: 'Modernizing our company website with new design and features.',
-    startDate: '2024-01-15',
-    endDate: '2024-04-15',
-  },
-  {
-    id: '2',
-    title: 'Mobile App Development',
-    status: 'on-hold',
-    progress: 30,
-    description: 'Creating a new mobile app for our customers.',
-    startDate: '2024-02-01',
-  },
-  {
-    id: '3',
-    title: 'Data Migration',
-    status: 'completed',
-    progress: 100,
-    description: 'Migrating data from legacy systems to new cloud infrastructure.',
-    startDate: '2024-01-01',
-    endDate: '2024-02-28',
-  },
-];
-
 export const ProjectDetailPage: FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const project = mockProjects.find((p) => p.id === id);
+  const project = projects.find((p) => p.id === id);
 
   if (!project) {
     return (
@@ -171,9 +142,9 @@ export const ProjectDetailPage: FC = () => {
   return (
     <Container>
       <Header>
-        <Title>{project.title}</Title>
+        <Title>{project.name}</Title>
         <ProjectDropdown
-          projects={mockProjects}
+          projects={projects}
           selectedProject={project}
           onProjectSelect={(newProject) => navigate(`/projects/${newProject.id}`)}
         />
@@ -202,6 +173,71 @@ export const ProjectDetailPage: FC = () => {
             <ProgressFill progress={project.progress} />
           </ProgressBar>
         </ProgressSection>
+
+        <Section>
+          <SectionTitle>Team Members</SectionTitle>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            {project.team.map((userId) => {
+              const user = users.find((u) => u.id === userId);
+              return user ? (
+                <div
+                  key={user.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.5rem',
+                    background: '#f3f4f6',
+                    borderRadius: '0.375rem',
+                  }}
+                >
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    style={{
+                      width: '2rem',
+                      height: '2rem',
+                      borderRadius: '50%',
+                      marginRight: '0.5rem',
+                    }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 500 }}>{user.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{user.role}</div>
+                  </div>
+                </div>
+              ) : null;
+            })}
+          </div>
+        </Section>
+
+        <Section>
+          <SectionTitle>Tags</SectionTitle>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  padding: '0.25rem 0.75rem',
+                  background: '#e5e7eb',
+                  color: '#4b5563',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </Section>
+
+        {project.budget && (
+          <Section>
+            <SectionTitle>Budget</SectionTitle>
+            <div style={{ fontSize: '1.25rem', color: '#047857' }}>
+              ${project.budget.toLocaleString()}
+            </div>
+          </Section>
+        )}
       </Card>
     </Container>
   );

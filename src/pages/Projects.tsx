@@ -1,10 +1,15 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import styled from 'styled-components';
-import { ProjectCard, type Project } from '../components/project/ProjectCard';
+import { projects } from '../data';
+import { ProjectCard } from '../components/project/ProjectCard';
 import { ProjectDropdown } from '../components/project/ProjectDropdown';
 
 const Container = styled.div`
   padding: 1.5rem;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 `;
 
 const Header = styled.div`
@@ -23,7 +28,9 @@ const Title = styled.h1`
 const ProjectGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 1rem; /* Reduced from 1.5rem for more compact layout */
+  width: 100%;
+  box-sizing: border-box;
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
@@ -32,41 +39,13 @@ const ProjectGrid = styled.div`
   @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  @media (min-width: 1280px) {
+    gap: 1.5rem; /* Restore larger gap for bigger screens */
+  }
 `;
 
-// Mock data - replace with real API call
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    title: 'Website Redesign',
-    status: 'active',
-    progress: 75,
-    description: 'Modernizing our company website with new design and features.',
-    startDate: '2024-01-15',
-    endDate: '2024-04-15',
-  },
-  {
-    id: '2',
-    title: 'Mobile App Development',
-    status: 'on-hold',
-    progress: 30,
-    description: 'Creating a new mobile app for our customers.',
-    startDate: '2024-02-01',
-  },
-  {
-    id: '3',
-    title: 'Data Migration',
-    status: 'completed',
-    progress: 100,
-    description: 'Migrating data from legacy systems to new cloud infrastructure.',
-    startDate: '2024-01-01',
-    endDate: '2024-02-28',
-  },
-];
-
 export const ProjectsPage: FC = () => {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(mockProjects[0]);
-
   return (
     <Container>
       <Header>
@@ -74,7 +53,7 @@ export const ProjectsPage: FC = () => {
       </Header>
 
       <ProjectGrid>
-        {mockProjects.map((project) => (
+        {projects.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
       </ProjectGrid>

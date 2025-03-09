@@ -1,10 +1,15 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Project } from './ProjectCard';
+import { Project } from '../../data/types';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 const Container = styled.div`
   position: relative;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 `;
 
 const DropdownButton = styled.button<{ isOpen: boolean }>`
@@ -12,23 +17,34 @@ const DropdownButton = styled.button<{ isOpen: boolean }>`
   align-items: center;
   justify-content: space-between;
   width: 16rem;
-  padding: 0 1rem;
-  height: 1.25rem;
+  padding: 0.75rem 1rem;
   background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1.5px solid ${({ isOpen }) => (isOpen ? '#3b82f6' : '#e5e7eb')};
+  border-radius: 0.625rem;
+  box-shadow: ${({ isOpen }) =>
+    isOpen
+      ? '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06)'
+      : '0 1px 3px rgba(0, 0, 0, 0.05)'};
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ isOpen }) => (isOpen ? '#3b82f6' : '#d1d5db')};
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
 
   &:focus {
     outline: none;
-    ring: 2px;
-    ring-color: #3b82f6;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   }
 
   svg {
     width: 1.25rem;
     height: 1.25rem;
-    transition: transform 0.2s;
+    color: #6b7280;
+    transition: all 0.2s ease;
     transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0)')};
   }
 `;
@@ -37,34 +53,76 @@ const ButtonText = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #374151;
 `;
 
 const DropdownMenu = styled.div`
   position: absolute;
   z-index: 10;
   width: 16rem;
-  margin-top: 0.5rem;
+  margin-top: 0.375rem;
   background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1.5px solid #f3f4f6;
+  border-radius: 0.625rem;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  opacity: 1;
+  transform-origin: top;
+  animation: dropdownFade 0.15s ease-out;
+
+  @keyframes dropdownFade {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 `;
 
 const DropdownContent = styled.div`
-  padding: 0.25rem 0;
+  padding: 0.375rem;
   max-height: 15rem;
   overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
+  }
 `;
 
 const ProjectButton = styled.button<{ isSelected: boolean }>`
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 0.875rem;
+  margin: 0.125rem 0;
   text-align: left;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
   background: ${({ isSelected }) => (isSelected ? '#eff6ff' : 'transparent')};
   color: ${({ isSelected }) => (isSelected ? '#1d4ed8' : '#374151')};
 
   &:hover {
-    background: ${({ isSelected }) => (isSelected ? '#eff6ff' : '#f3f4f6')};
+    background: ${({ isSelected }) => (isSelected ? '#e0f2fe' : '#f8fafc')};
+  }
+
+  &:focus {
+    outline: none;
+    background: ${({ isSelected }) => (isSelected ? '#e0f2fe' : '#f8fafc')};
   }
 `;
 
@@ -72,19 +130,36 @@ const ProjectButtonContent = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
 `;
 
 const ProjectTitle = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.9375rem;
+  font-weight: 450;
 `;
 
 const StatusDot = styled.span<{ status: Project['status'] }>`
   display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.625rem;
+  height: 0.625rem;
   border-radius: 9999px;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 0 2px
+    ${({ status }) => {
+      switch (status) {
+        case 'active':
+          return 'rgba(34, 197, 94, 0.15)';
+        case 'completed':
+          return 'rgba(59, 130, 246, 0.15)';
+        case 'on-hold':
+          return 'rgba(234, 179, 8, 0.15)';
+        case 'cancelled':
+          return 'rgba(239, 68, 68, 0.15)';
+      }
+    }};
   background-color: ${({ status }) => {
     switch (status) {
       case 'active':
@@ -93,8 +168,8 @@ const StatusDot = styled.span<{ status: Project['status'] }>`
         return '#3b82f6';
       case 'on-hold':
         return '#eab308';
-      default:
-        return '#d1d5db';
+      case 'cancelled':
+        return '#ef4444';
     }
   }};
 `;
@@ -127,7 +202,7 @@ export const ProjectDropdown: FC<ProjectDropdownProps> = ({
   return (
     <Container ref={dropdownRef}>
       <DropdownButton onClick={() => setIsOpen(!isOpen)} isOpen={isOpen}>
-        <ButtonText>{selectedProject ? selectedProject.title : 'Select Project'}</ButtonText>
+        <ButtonText>{selectedProject ? selectedProject.name : 'Select Project'}</ButtonText>
         <ChevronDownIcon />
       </DropdownButton>
 
@@ -144,7 +219,7 @@ export const ProjectDropdown: FC<ProjectDropdownProps> = ({
                 isSelected={selectedProject?.id === project.id}
               >
                 <ProjectButtonContent>
-                  <ProjectTitle>{project.title}</ProjectTitle>
+                  <ProjectTitle>{project.name}</ProjectTitle>
                   <StatusDot status={project.status} />
                 </ProjectButtonContent>
               </ProjectButton>
