@@ -1,22 +1,51 @@
 import { Outlet } from 'react-router-dom';
-import styles from './MainLayout.module.css';
 import Sidebar from '../sidebar/Sidebar';
 import { useState } from 'react';
+import styled from 'styled-components';
+
+const LayoutContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  background-color: #ffffff;
+  position: relative;
+`;
+
+const ContentContainer = styled.div<{ sidebarCollapsed: boolean }>`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: ${({ sidebarCollapsed }) => (sidebarCollapsed ? '80px' : '280px')};
+  transition: margin-left 0.3s ease;
+`;
+
+const Main = styled.main`
+  flex: 1;
+  padding: 2rem;
+  background-color: #ffffff;
+`;
+
+const Footer = styled.footer`
+  padding: 1rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.875rem;
+  border-top: 1px solid #eee;
+`;
 
 export function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className={styles.layout}>
+    <LayoutContainer>
       <Sidebar onCollapse={(collapsed: boolean) => setSidebarCollapsed(collapsed)} />
-      <div className={`${styles.content} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
-        <main className={styles.main}>
+      <ContentContainer sidebarCollapsed={sidebarCollapsed}>
+        <Main>
           <Outlet />
-        </main>
-        <footer className={styles.footer}>
+        </Main>
+        <Footer>
           <p>&copy; {new Date().getFullYear()} My App. All rights reserved.</p>
-        </footer>
-      </div>
-    </div>
+        </Footer>
+      </ContentContainer>
+    </LayoutContainer>
   );
 }

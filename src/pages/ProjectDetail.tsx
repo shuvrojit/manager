@@ -1,7 +1,125 @@
 import { FC } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { Project } from '../components/project/ProjectCard';
 import { ProjectDropdown } from '../components/project/ProjectDropdown';
+
+const Container = styled.div`
+  padding: 1.5rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+`;
+
+const Title = styled.h1`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const NotFound = styled.div`
+  text-align: center;
+`;
+
+const BackButton = styled.button`
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 0.5rem;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+`;
+
+const Card = styled.div`
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+`;
+
+const StatusBadge = styled.span<{ status: Project['status'] }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  ${({ status }) => {
+    switch (status) {
+      case 'active':
+        return 'background-color: #dcfce7; color: #166534;';
+      case 'completed':
+        return 'background-color: #dbeafe; color: #1e40af;';
+      case 'on-hold':
+        return 'background-color: #fef3c7; color: #92400e;';
+    }
+  }}
+`;
+
+const DateInfo = styled.div`
+  font-size: 0.875rem;
+  color: #6b7280;
+
+  span + span {
+    margin-left: 1rem;
+  }
+`;
+
+const Section = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.5rem;
+`;
+
+const Description = styled.p`
+  color: #4b5563;
+`;
+
+const ProgressSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const ProgressHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+`;
+
+const ProgressBar = styled.div`
+  width: 100%;
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+`;
+
+const ProgressFill = styled.div<{ progress: number }>`
+  height: 100%;
+  background-color: #2563eb;
+  border-radius: 9999px;
+  width: ${({ progress }) => `${progress}%`};
+`;
 
 // Mock data - replace with real API call
 const mockProjects: Project[] = [
@@ -41,77 +159,50 @@ export const ProjectDetailPage: FC = () => {
 
   if (!project) {
     return (
-      <div className="p-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Project not found</h2>
-          <button
-            onClick={() => navigate('/projects')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Back to Projects
-          </button>
-        </div>
-      </div>
+      <Container>
+        <NotFound>
+          <Title>Project not found</Title>
+          <BackButton onClick={() => navigate('/projects')}>Back to Projects</BackButton>
+        </NotFound>
+      </Container>
     );
   }
 
-  const getStatusColor = (status: Project['status']) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      case 'on-hold':
-        return 'bg-yellow-100 text-yellow-800';
-    }
-  };
-
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">{project.title}</h1>
+    <Container>
+      <Header>
+        <Title>{project.title}</Title>
         <ProjectDropdown
           projects={mockProjects}
           selectedProject={project}
           onProjectSelect={(newProject) => navigate(`/projects/${newProject.id}`)}
         />
-      </div>
+      </Header>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-              project.status
-            )}`}
-          >
-            {project.status}
-          </span>
-          <div className="text-sm text-gray-500">
+      <Card>
+        <CardHeader>
+          <StatusBadge status={project.status}>{project.status}</StatusBadge>
+          <DateInfo>
             <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
-            {project.endDate && (
-              <span className="ml-4">Due: {new Date(project.endDate).toLocaleDateString()}</span>
-            )}
-          </div>
-        </div>
+            {project.endDate && <span>Due: {new Date(project.endDate).toLocaleDateString()}</span>}
+          </DateInfo>
+        </CardHeader>
 
-        <div className="mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
-          <p className="text-gray-600">{project.description}</p>
-        </div>
+        <Section>
+          <SectionTitle>Description</SectionTitle>
+          <Description>{project.description}</Description>
+        </Section>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-sm text-gray-500">
+        <ProgressSection>
+          <ProgressHeader>
             <span>Progress</span>
             <span>{project.progress}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full"
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+          </ProgressHeader>
+          <ProgressBar>
+            <ProgressFill progress={project.progress} />
+          </ProgressBar>
+        </ProgressSection>
+      </Card>
+    </Container>
   );
 };

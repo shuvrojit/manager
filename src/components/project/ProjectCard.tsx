@@ -1,5 +1,136 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import { FaRegCalendarAlt, FaRegCheckCircle } from 'react-icons/fa';
+import { BsClockHistory, BsPauseFill, BsPlayFill } from 'react-icons/bs';
+import { IoIosStats } from 'react-icons/io';
+
+const Card = styled(Link)`
+  display: block;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+
+  &:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: #93c5fd;
+    transform: translateY(-2px);
+  }
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
+const Title = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #2563eb;
+  }
+`;
+
+const StatusBadge = styled.span<{ status: Project['status'] }>`
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+
+  ${({ status }) => {
+    switch (status) {
+      case 'active':
+        return 'background-color: #dcfce7; color: #166534;';
+      case 'completed':
+        return 'background-color: #dbeafe; color: #1e40af;';
+      case 'on-hold':
+        return 'background-color: #fef3c7; color: #92400e;';
+    }
+  }}
+`;
+
+const Description = styled.p`
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const ProgressSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const ProgressHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+`;
+
+const ProgressText = styled.span`
+  display: flex;
+  align-items: center;
+
+  svg {
+    margin-right: 0.25rem;
+    color: #3b82f6;
+  }
+`;
+
+const ProgressValue = styled.span`
+  font-weight: 500;
+`;
+
+const ProgressBar = styled.div`
+  width: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.625rem;
+`;
+
+const ProgressFill = styled.div<{ progress: number }>`
+  height: 100%;
+  border-radius: 9999px;
+  background-color: ${({ progress }) => (progress === 100 ? '#22c55e' : '#2563eb')};
+  width: ${({ progress }) => `${progress}%`};
+`;
+
+const DateSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+`;
+
+const DateText = styled.span`
+  display: flex;
+  align-items: center;
+
+  svg {
+    margin-right: 0.25rem;
+    color: #60a5fa;
+  }
+`;
 
 export interface Project {
   id: string;
@@ -16,46 +147,50 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
-  const getStatusColor = (status: Project['status']) => {
+  const getStatusIcon = (status: Project['status']) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return <BsPlayFill />;
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return <FaRegCheckCircle />;
       case 'on-hold':
-        return 'bg-yellow-100 text-yellow-800';
+        return <BsPauseFill />;
     }
   };
 
   return (
-    <Link
-      to={`/projects/${project.id}`}
-      className="block p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-    >
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
-        <span
-          className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-            project.status
-          )}`}
-        >
+    <Card to={`/projects/${project.id}`}>
+      <CardHeader>
+        <Title>{project.title}</Title>
+        <StatusBadge status={project.status}>
+          {getStatusIcon(project.status)}
           {project.status}
-        </span>
-      </div>
-      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.description}</p>
-      <div className="space-y-2">
-        <div className="flex justify-between items-center text-sm text-gray-500">
-          <span>Progress</span>
-          <span>{project.progress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${project.progress}%` }} />
-        </div>
-        <div className="flex justify-between items-center text-xs text-gray-500">
-          <span>Start: {new Date(project.startDate).toLocaleDateString()}</span>
-          {project.endDate && <span>End: {new Date(project.endDate).toLocaleDateString()}</span>}
-        </div>
-      </div>
-    </Link>
+        </StatusBadge>
+      </CardHeader>
+      <Description>{project.description}</Description>
+      <ProgressSection>
+        <ProgressHeader>
+          <ProgressText>
+            <IoIosStats /> Progress
+          </ProgressText>
+          <ProgressValue>{project.progress}%</ProgressValue>
+        </ProgressHeader>
+        <ProgressBar>
+          <ProgressFill progress={project.progress} />
+        </ProgressBar>
+        <DateSection>
+          <DateText>
+            <FaRegCalendarAlt />
+            {new Date(project.startDate).toLocaleDateString()}
+          </DateText>
+          {project.endDate && (
+            <DateText>
+              <BsClockHistory />
+              {new Date(project.endDate).toLocaleDateString()}
+            </DateText>
+          )}
+        </DateSection>
+      </ProgressSection>
+    </Card>
   );
 };

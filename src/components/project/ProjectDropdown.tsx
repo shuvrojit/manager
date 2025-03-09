@@ -1,6 +1,103 @@
 import { FC, useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
 import { Project } from './ProjectCard';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+
+const Container = styled.div`
+  position: relative;
+`;
+
+const DropdownButton = styled.button<{ isOpen: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 16rem;
+  padding: 0 1rem;
+  height: 1.25rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  &:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: transform 0.2s;
+    transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0)')};
+  }
+`;
+
+const ButtonText = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  z-index: 10;
+  width: 16rem;
+  margin-top: 0.5rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+`;
+
+const DropdownContent = styled.div`
+  padding: 0.25rem 0;
+  max-height: 15rem;
+  overflow: auto;
+`;
+
+const ProjectButton = styled.button<{ isSelected: boolean }>`
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  background: ${({ isSelected }) => (isSelected ? '#eff6ff' : 'transparent')};
+  color: ${({ isSelected }) => (isSelected ? '#1d4ed8' : '#374151')};
+
+  &:hover {
+    background: ${({ isSelected }) => (isSelected ? '#eff6ff' : '#f3f4f6')};
+  }
+`;
+
+const ProjectButtonContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ProjectTitle = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const StatusDot = styled.span<{ status: Project['status'] }>`
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: ${({ status }) => {
+    switch (status) {
+      case 'active':
+        return '#22c55e';
+      case 'completed':
+        return '#3b82f6';
+      case 'on-hold':
+        return '#eab308';
+      default:
+        return '#d1d5db';
+    }
+  }};
+`;
 
 interface ProjectDropdownProps {
   projects: Project[];
@@ -28,48 +125,33 @@ export const ProjectDropdown: FC<ProjectDropdownProps> = ({
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-64 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <span className="truncate">
-          {selectedProject ? selectedProject.title : 'Select Project'}
-        </span>
-        <ChevronDownIcon className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
+    <Container ref={dropdownRef}>
+      <DropdownButton onClick={() => setIsOpen(!isOpen)} isOpen={isOpen}>
+        <ButtonText>{selectedProject ? selectedProject.title : 'Select Project'}</ButtonText>
+        <ChevronDownIcon />
+      </DropdownButton>
 
       {isOpen && (
-        <div className="absolute z-10 w-64 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg">
-          <div className="py-1 max-h-60 overflow-auto">
+        <DropdownMenu>
+          <DropdownContent>
             {projects.map((project) => (
-              <button
+              <ProjectButton
                 key={project.id}
                 onClick={() => {
                   onProjectSelect(project);
                   setIsOpen(false);
                 }}
-                className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
-                  selectedProject?.id === project.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                }`}
+                isSelected={selectedProject?.id === project.id}
               >
-                <div className="flex items-center justify-between">
-                  <span className="truncate">{project.title}</span>
-                  <span
-                    className={`inline-block w-2 h-2 rounded-full ${
-                      project.status === 'active'
-                        ? 'bg-green-500'
-                        : project.status === 'completed'
-                          ? 'bg-blue-500'
-                          : 'bg-yellow-500'
-                    }`}
-                  />
-                </div>
-              </button>
+                <ProjectButtonContent>
+                  <ProjectTitle>{project.title}</ProjectTitle>
+                  <StatusDot status={project.status} />
+                </ProjectButtonContent>
+              </ProjectButton>
             ))}
-          </div>
-        </div>
+          </DropdownContent>
+        </DropdownMenu>
       )}
-    </div>
+    </Container>
   );
 };

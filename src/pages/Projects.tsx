@@ -1,6 +1,38 @@
 import { FC, useState } from 'react';
+import styled from 'styled-components';
 import { ProjectCard, type Project } from '../components/project/ProjectCard';
 import { ProjectDropdown } from '../components/project/ProjectDropdown';
+
+const Container = styled.div`
+  padding: 1.5rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+`;
+
+const Title = styled.h1`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const ProjectGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
 
 // Mock data - replace with real API call
 const mockProjects: Project[] = [
@@ -36,21 +68,16 @@ export const ProjectsPage: FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(mockProjects[0]);
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-        <ProjectDropdown
-          projects={mockProjects}
-          selectedProject={selectedProject}
-          onProjectSelect={setSelectedProject}
-        />
-      </div>
+    <Container>
+      <Header>
+        <Title>Projects</Title>
+      </Header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ProjectGrid>
         {mockProjects.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
-      </div>
-    </div>
+      </ProjectGrid>
+    </Container>
   );
 };
