@@ -12,7 +12,10 @@ interface ApiError extends Error {
 export class ApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl: string) {
+  constructor(baseUrl: string = import.meta.env.VITE_API_BASE_URL) {
+    if (!baseUrl) {
+      throw new Error('API base URL is required. Check environment variables.');
+    }
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash if present
   }
 

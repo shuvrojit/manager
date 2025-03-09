@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 /coverage/
 /src/__snapshots__/
+
+# Environment variables
+.env
+.env.*
+!.env.example

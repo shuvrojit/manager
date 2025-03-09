@@ -4,8 +4,11 @@ import { ApiClient } from './client';
 describe('ApiClient', () => {
   let client: ApiClient;
 
+  const TEST_API_URL = 'https://api.example.com';
+
   beforeEach(() => {
-    client = new ApiClient('https://api.example.com');
+    // Create client with test URL
+    client = new ApiClient(TEST_API_URL);
     // Reset fetch mock before each test
     vi.restoreAllMocks();
   });
