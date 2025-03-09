@@ -1,35 +1,44 @@
 # Project Manager
 
-A modern React application built with TypeScript, Vite, and React Router for managing projects and tasks. This workspace provides a comprehensive project management interface with a responsive design.
+A modern React application built with TypeScript, Vite, and React Router for managing projects and tasks. This workspace provides a comprehensive project management interface with a responsive design and real-time data visualization.
 
 ## Technologies
 
-- React 19
-- TypeScript
-- Vite 6
-- React Router 7
-- Testing Library
-- Vitest
-- ESLint + Prettier
-- Styled Components
+- React 19.0.0
+- TypeScript 5.7.2
+- Vite 6.2.0
+- React Router 7.3.0
+- Testing Library 16.2.0
+- Vitest 3.0.8
+- ESLint 9.21.0 + Prettier 3.5.3
+- Styled Components 6.1.15
+- Recharts 2.15.1
+- HeroIcons 2.2.0
+- Lucide React 0.479.0
 
 ## Project Structure
 
 ```
 src/
 ├── components/    # Reusable UI components
+│   ├── dashboard/ # Dashboard and visualization components
 │   ├── layout/    # Layout components (MainLayout)
 │   ├── project/   # Project-related components
 │   └── sidebar/   # Sidebar navigation components
-├── hooks/         # Custom React hooks
-├── pages/         # Page components (routed views)
-├── services/      # API and other services
-│   └── api/       # API client implementation
-└── test/          # Test utilities and setup
+├── data/         # Data management and type definitions
+├── hooks/        # Custom React hooks
+├── pages/        # Page components (routed views)
+├── services/     # API and other services
+│   └── api/      # API client implementation
+└── test/         # Test utilities and setup
 ```
 
 ### Components
 
+- **Dashboard**: Data visualization and statistics
+  - `BudgetChart.tsx`: Budget allocation and tracking charts
+  - `ProjectStatusChart.tsx`: Project status distribution charts
+  - `StatsCard.tsx`: Key metrics and statistics display
 - **Layout**: Contains `MainLayout.tsx` which provides the base layout structure with sidebar and content area
 - **Project**: Contains components related to project display and management
   - `ProjectCard.tsx`: Card component for displaying project summaries
@@ -43,17 +52,35 @@ src/
   - `NavItem.tsx`: Individual navigation item component
   - `BottomLinks.tsx`: Footer links in sidebar
 
+### Data Management
+
+The `/src/data` directory contains type definitions and data management:
+
+- `types.ts`: TypeScript interfaces and types
+- `users.ts`: User data and management
+- `teams.ts`: Team structure and relationships
+- `projects.ts`: Project data and status management
+- `index.ts`: Centralized data export
+
 ## Routes
 
 This project uses React Router v7 for navigation. Routes are defined in `src/routes.tsx` and include:
 
-- Home (/) - Dashboard view
+- Home (/) - Dashboard view with charts and statistics
 - Projects (/projects) - List of all projects
 - Project Detail (/projects/:id) - Individual project details
 - About (/about) - About page
 - NotFound (404 page) - Fallback for invalid routes
 
 All routes are rendered within the `MainLayout` component, which provides consistent structure across the application.
+
+## Data Visualization
+
+The application uses Recharts for data visualization, providing:
+- Project status distribution charts
+- Budget allocation and tracking
+- Team performance metrics
+- Interactive and responsive charts
 
 ## Services
 
@@ -101,7 +128,7 @@ function ProjectsList() {
 ```bash
 # Development
 npm run dev         # Start development server
-npm run build       # Build for production
+npm run build       # Build for production (includes type checking)
 npm run preview     # Preview production build
 
 # Testing
@@ -117,7 +144,12 @@ npm run format     # Format code with Prettier
 
 ## Testing
 
-This project uses Vitest and Testing Library for testing. Tests are co-located with their implementation files or placed in the `__snapshots__` directory.
+This project uses Vitest and Testing Library for testing. Tests are co-located with their implementation files. Testing setup includes:
+
+- @testing-library/react 16.2.0
+- @testing-library/jest-dom 6.6.3
+- @testing-library/user-event 14.6.1
+- JSDOM 26.0.0 for browser environment simulation
 
 ### Running Tests
 
@@ -128,24 +160,33 @@ npm run coverage  # Generate test coverage report
 
 ## Git Hooks
 
-The project uses Husky and lint-staged to run tests and linting before each commit, ensuring code quality.
+The project uses Husky and lint-staged to run formatting before each commit:
 
-## Expanding the ESLint Configuration
+```json
+{
+  "*.{ts,tsx}": ["prettier --write"],
+  "*.{css,json,js}": ["prettier --write"]
+}
+```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## ESLint Configuration
+
+The project uses the new ESLint flat config system. To modify the configuration:
 
 ```js
 // eslint.config.js
-export default tseslint.config({
-  extends: [
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-  ],
-  languageOptions: {
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+import tseslint from 'typescript-eslint';
+import js from '@eslint/js';
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      },
     },
   },
-})
-```
+  // Add your custom rules here
+];
