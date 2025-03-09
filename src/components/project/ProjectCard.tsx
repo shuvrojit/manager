@@ -260,13 +260,13 @@ const TimeValue = styled.span`
 import { Project } from '../../data/types';
 
 // Helper function to calculate days until due date
-const getDaysUntilDueDate = (endDate: string | undefined): number | undefined => {
-  if (!endDate) return undefined;
+const getDaysUntilDueDate = (targetEndDate: string | undefined): number | undefined => {
+  if (!targetEndDate) return undefined;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const dueDate = new Date(endDate);
+  const dueDate = new Date(targetEndDate);
   dueDate.setHours(0, 0, 0, 0);
 
   const timeDiff = dueDate.getTime() - today.getTime();
@@ -291,7 +291,7 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
     }
   };
 
-  const daysUntilDue = getDaysUntilDueDate(project.endDate);
+  const daysUntilDue = getDaysUntilDueDate(project.targetEndDate);
 
   return (
     <Card to={`/projects/${project.id}`}>
@@ -336,7 +336,7 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
             <FaRegCalendarAlt />
             {new Date(project.startDate).toLocaleDateString()}
           </DateItem>
-          {project.endDate && (
+          {project.targetEndDate && (
             <DueDateItem daysUntilDue={daysUntilDue}>
               {daysUntilDue !== undefined && daysUntilDue <= 3 ? (
                 <FaExclamationCircle />
@@ -345,7 +345,7 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
               ) : (
                 <FaCalendarCheck />
               )}
-              {new Date(project.endDate).toLocaleDateString()}
+              {new Date(project.targetEndDate).toLocaleDateString()}
               {daysUntilDue !== undefined && daysUntilDue <= 3 && (
                 <span style={{ marginLeft: '0.25rem', fontSize: '0.675rem' }}>
                   ({daysUntilDue === 0 ? 'Today!' : `${daysUntilDue}d!`})

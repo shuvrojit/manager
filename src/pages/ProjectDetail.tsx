@@ -202,13 +202,13 @@ const ProgressFill = styled.div<{ progress: number }>`
 `;
 
 // Helper function to calculate days until due date
-const getDaysUntilDueDate = (endDate: string | undefined): number | undefined => {
-  if (!endDate) return undefined;
+const getDaysUntilDueDate = (targetEndDate: string | undefined): number | undefined => {
+  if (!targetEndDate) return undefined;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const dueDate = new Date(endDate);
+  const dueDate = new Date(targetEndDate);
   dueDate.setHours(0, 0, 0, 0);
 
   const timeDiff = dueDate.getTime() - today.getTime();
@@ -420,7 +420,7 @@ export const ProjectDetailPage: FC = () => {
     );
   }
 
-  const daysUntilDue = getDaysUntilDueDate(project.endDate);
+  const daysUntilDue = getDaysUntilDueDate(project.targetEndDate);
 
   return (
     <Container>
@@ -449,7 +449,7 @@ export const ProjectDetailPage: FC = () => {
               <FaRegCalendarAlt />
               <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
             </DateItem>
-            {project.endDate && (
+            {project.targetEndDate && (
               <DueDateItem daysUntilDue={daysUntilDue}>
                 {daysUntilDue !== undefined && daysUntilDue <= 3 ? (
                   <FaExclamationCircle />
@@ -459,7 +459,7 @@ export const ProjectDetailPage: FC = () => {
                   <FaCalendarCheck />
                 )}
                 <span>
-                  Due: {new Date(project.endDate).toLocaleDateString()}
+                  Due: {new Date(project.targetEndDate).toLocaleDateString()}
                   {daysUntilDue !== undefined && daysUntilDue <= 3 && (
                     <span style={{ marginLeft: '0.5rem' }}>
                       (
@@ -528,6 +528,29 @@ export const ProjectDetailPage: FC = () => {
             </div>
           </Section>
         )}
+
+        <Section>
+          <SectionTitle>Project Timeline</SectionTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div>
+              <strong>Created:</strong> {new Date(project.createdAt).toLocaleString()} by{' '}
+              {users.find((u) => u.id === project.createdBy)?.name}
+            </div>
+            <div>
+              <strong>Last Updated:</strong> {new Date(project.updatedAt).toLocaleString()}
+            </div>
+            {project.actualEndDate && (
+              <div>
+                <strong>Completed:</strong> {new Date(project.actualEndDate).toLocaleString()}
+              </div>
+            )}
+          </div>
+        </Section>
+
+        <Section>
+          <SectionTitle>Client</SectionTitle>
+          <div>Client ID: {project.clientId}</div>
+        </Section>
       </Card>
 
       <Section>

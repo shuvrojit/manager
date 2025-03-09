@@ -11,7 +11,7 @@ const SidebarContainer = styled.aside<{ collapsed: boolean }>`
   left: 0;
   display: flex;
   flex-direction: column;
-  width: ${(props) => (props.collapsed ? '80px' : '280px')};
+  width: ${(props) => (props.collapsed ? '72px' : '252px')};
   height: 100vh;
   background-color: #1e1e1e;
   color: #a7a7a7;
