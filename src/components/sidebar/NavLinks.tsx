@@ -4,6 +4,7 @@ import { NavItem, NavItemProps } from './NavItem';
 import { AiOutlineHome } from 'react-icons/ai';
 import { GoProject } from 'react-icons/go';
 import { IoSettingsOutline } from 'react-icons/io5';
+import { CgProfile } from 'react-icons/cg';
 
 const NavContainer = styled.nav`
   display: flex;
@@ -26,6 +27,11 @@ export const NavLinks: React.FC<NavLinksProps> = ({ collapsed = false }) => {
       icon: <GoProject size={20} />,
       label: 'Projects',
       to: '/projects',
+    },
+    {
+      icon: <CgProfile size={20} />,
+      label: 'Profile',
+      to: '/profile',
     },
     {
       icon: <IoSettingsOutline size={20} />,

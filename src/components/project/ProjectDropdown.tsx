@@ -19,16 +19,15 @@ const DropdownButton = styled.button<{ isOpen: boolean }>`
   width: 16rem;
   padding: 0.75rem 1rem;
   background: white;
-  border: 1.5px solid ${({ isOpen }) => (isOpen ? '#3b82f6' : '#e5e7eb')};
+  border: none;
   border-radius: 0.625rem;
   box-shadow: ${({ isOpen }) =>
     isOpen
-      ? '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06)'
-      : '0 1px 3px rgba(0, 0, 0, 0.05)'};
+      ? '0 4px 8px -2px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1)'
+      : '0 1px 3px rgba(0, 0, 0, 0.08)'};
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${({ isOpen }) => (isOpen ? '#3b82f6' : '#d1d5db')};
     box-shadow:
       0 4px 6px -1px rgba(0, 0, 0, 0.1),
       0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -36,14 +35,14 @@ const DropdownButton = styled.button<{ isOpen: boolean }>`
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
   }
 
   svg {
     width: 1.25rem;
     height: 1.25rem;
-    color: #6b7280;
+    color: #374151;
+    stroke-width: 2.5;
     transition: all 0.2s ease;
     transform: ${({ isOpen }) => (isOpen ? 'rotate(180deg)' : 'rotate(0)')};
   }
@@ -54,8 +53,8 @@ const ButtonText = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.9375rem;
-  font-weight: 500;
-  color: #374151;
+  font-weight: 700;
+  color: #111827;
 `;
 
 const DropdownMenu = styled.div`
@@ -203,7 +202,7 @@ export const ProjectDropdown: FC<ProjectDropdownProps> = ({
     <Container ref={dropdownRef}>
       <DropdownButton onClick={() => setIsOpen(!isOpen)} isOpen={isOpen}>
         <ButtonText>{selectedProject ? selectedProject.name : 'Select Project'}</ButtonText>
-        <ChevronDownIcon />
+        <ChevronDownIcon strokeWidth={3} />
       </DropdownButton>
 
       {isOpen && (

@@ -1,7 +1,15 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
-import { FaRegCalendarAlt, FaRegCheckCircle, FaHourglassHalf, FaClock } from 'react-icons/fa';
+import {
+  FaRegCalendarAlt,
+  FaRegCheckCircle,
+  FaHourglassHalf,
+  FaClock,
+  FaCalendarCheck,
+  FaExclamationTriangle,
+  FaExclamationCircle,
+} from 'react-icons/fa';
 import { BsClockHistory, BsPauseFill, BsPlayFill } from 'react-icons/bs';
 import { IoIosStats } from 'react-icons/io';
 
@@ -130,20 +138,51 @@ const DateSection = styled.div`
   justify-content: space-between;
   align-items: center;
   font-size: 0.75rem;
-  color: #6b7280;
   margin-top: 0.75rem;
   padding-top: 0.5rem;
   border-top: 1px solid #f3f4f6;
+  gap: 0.5rem;
 `;
 
-const DateText = styled.span`
+const DateItem = styled.span`
   display: flex;
   align-items: center;
+  background-color: #f9fafb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
 
   svg {
     margin-right: 0.25rem;
     color: #60a5fa;
+    font-size: 0.875rem;
   }
+`;
+
+const DueDateItem = styled(DateItem)<{ daysUntilDue?: number }>`
+  ${({ daysUntilDue }) => {
+    if (daysUntilDue !== undefined) {
+      if (daysUntilDue <= 3) {
+        return `
+          background-color: #fee2e2;
+          color: #b91c1c;
+          font-weight: 500;
+          svg {
+            color: #b91c1c;
+          }
+        `;
+      } else if (daysUntilDue <= 7) {
+        return `
+          background-color: #fef3c7;
+          color: #92400e;
+          font-weight: 500;
+          svg {
+            color: #92400e;
+          }
+        `;
+      }
+    }
+    return '';
+  }}
 `;
 
 const pulse = keyframes`
@@ -220,6 +259,20 @@ const TimeValue = styled.span`
 
 import { Project } from '../../data/types';
 
+// Helper function to calculate days until due date
+const getDaysUntilDueDate = (endDate: string | undefined): number | undefined => {
+  if (!endDate) return undefined;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dueDate = new Date(endDate);
+  dueDate.setHours(0, 0, 0, 0);
+
+  const timeDiff = dueDate.getTime() - today.getTime();
+  return Math.ceil(timeDiff / (1000 * 3600 * 24));
+};
+
 interface ProjectCardProps {
   project: Project;
 }
@@ -237,6 +290,8 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
         return <span style={{ marginRight: '0.25rem' }}>⨯</span>;
     }
   };
+
+  const daysUntilDue = getDaysUntilDueDate(project.endDate);
 
   return (
     <Card to={`/projects/${project.id}`}>
@@ -277,15 +332,26 @@ export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
         </TimeMetricsContainer>
 
         <DateSection>
-          <DateText>
+          <DateItem>
             <FaRegCalendarAlt />
             {new Date(project.startDate).toLocaleDateString()}
-          </DateText>
+          </DateItem>
           {project.endDate && (
-            <DateText>
-              <BsClockHistory />
+            <DueDateItem daysUntilDue={daysUntilDue}>
+              {daysUntilDue !== undefined && daysUntilDue <= 3 ? (
+                <FaExclamationCircle />
+              ) : daysUntilDue !== undefined && daysUntilDue <= 7 ? (
+                <FaExclamationTriangle />
+              ) : (
+                <FaCalendarCheck />
+              )}
               {new Date(project.endDate).toLocaleDateString()}
-            </DateText>
+              {daysUntilDue !== undefined && daysUntilDue <= 3 && (
+                <span style={{ marginLeft: '0.25rem', fontSize: '0.675rem' }}>
+                  ({daysUntilDue === 0 ? 'Today!' : `${daysUntilDue}d!`})
+                </span>
+              )}
+            </DueDateItem>
           )}
         </DateSection>
       </ProgressSection>

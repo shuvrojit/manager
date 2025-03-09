@@ -5,6 +5,7 @@ import { AboutPage } from './pages/About';
 import { NotFoundPage } from './pages/NotFound';
 import { ProjectsPage } from './pages/Projects';
 import { ProjectDetailPage } from './pages/ProjectDetail';
+import UserProfilePage from './pages/UserProfile';
 
 export const routes: RouteObject[] = [
   {
@@ -25,6 +26,10 @@ export const routes: RouteObject[] = [
       {
         path: '/projects/:id',
         element: <ProjectDetailPage />,
+      },
+      {
+        path: '/profile',
+        element: <UserProfilePage />,
       },
       {
         path: '*',

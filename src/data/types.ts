@@ -2,9 +2,25 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  personalEmail?: string;
   avatar: string;
   role: 'admin' | 'manager' | 'developer';
   team?: string;
+  about?: string;
+  skills?: string[];
+  location?: string;
+  phoneNumber?: string;
+  timezone?: string;
+  github?: string;
+  linkedin?: string;
+  preferredWorkingHours?: {
+    start: string;
+    end: string;
+  };
+  communicationPreferences?: {
+    slackNotifications: boolean;
+    emailNotifications: boolean;
+  };
 }
 
 export interface Project {
