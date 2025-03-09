@@ -1,41 +1,25 @@
 import { RouteObject } from 'react-router-dom';
-
-function HomePage() {
-  return (
-    <div>
-      <h1>Home</h1>
-    </div>
-  );
-}
-
-function AboutPage() {
-  return (
-    <div>
-      <h1>About</h1>
-    </div>
-  );
-}
-
-function NotFoundPage() {
-  return (
-    <div>
-      <h1>Not Found</h1>
-      <p>The page you're looking for doesn't exist.</p>
-    </div>
-  );
-}
+import { MainLayout } from './components/layout/MainLayout';
+import { HomePage } from './pages/Home';
+import { AboutPage } from './pages/About';
+import { NotFoundPage } from './pages/NotFound';
 
 export const routes: RouteObject[] = [
   {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    path: '/about',
-    element: <AboutPage />,
-  },
-  {
-    path: '*',
-    element: <NotFoundPage />,
+    element: <MainLayout />,
+    children: [
+      {
+        path: '/',
+        element: <HomePage />,
+      },
+      {
+        path: '/about',
+        element: <AboutPage />,
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
+      },
+    ],
   },
 ];
