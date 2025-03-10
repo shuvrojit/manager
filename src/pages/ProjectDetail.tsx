@@ -6,7 +6,7 @@ import { DropResult } from '@hello-pangea/dnd';
 import { projects, users } from '../data';
 import { TaskBoard } from '../components/project/TaskBoard';
 import { TaskModal } from '../components/project/TaskModal';
-import { ProjectDropdown } from '../components/project/ProjectDropdown';
+import { ProjectTasks } from '../components/project/ProjectTasks';
 import {
   FaRegCalendarAlt,
   FaCalendarCheck,
@@ -280,124 +280,14 @@ export const ProjectDetailPage: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
   const [selectedColumnId, setSelectedColumnId] = useState<string>('');
-  const [tasks, setTasks] = useState<ProjectTask[]>(() => {
-    const savedTasks = localStorage.getItem(`project_${id}_tasks`);
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
-
   const project = projects.find((p) => p.id === id);
 
-  // Save tasks to localStorage whenever they change
-  useEffect(() => {
+  const handleProgressUpdate = (progress: number) => {
+    // Update project progress in localStorage
     if (project) {
-      localStorage.setItem(`project_${project.id}_tasks`, JSON.stringify(tasks));
-    }
-  }, [tasks, project]);
-
-  const columns = useMemo<TaskColumn[]>(
-    () => [
-      {
-        id: 'todo',
-        title: 'To Do',
-        status: 'todo',
-        tasks: tasks.filter((task) => task.status === 'todo' && task.projectId === id),
-      },
-      {
-        id: 'in-progress',
-        title: 'In Progress',
-        status: 'in-progress',
-        tasks: tasks.filter((task) => task.status === 'in-progress' && task.projectId === id),
-      },
-      {
-        id: 'review',
-        title: 'In Review',
-        status: 'review',
-        tasks: tasks.filter((task) => task.status === 'review' && task.projectId === id),
-      },
-      {
-        id: 'done',
-        title: 'Done',
-        status: 'done',
-        tasks: tasks.filter((task) => task.status === 'done' && task.projectId === id),
-      },
-    ],
-    [tasks, id]
-  );
-
-  // Calculate project progress based on completed tasks
-  useEffect(() => {
-    if (project && tasks.length > 0) {
-      const completedTasks = tasks.filter((task) => task.status === 'done').length;
-      const progress = Math.round((completedTasks / tasks.length) * 100);
-
-      // Update project progress in localStorage
       const updatedProject = { ...project, progress };
       const allProjects = projects.map((p) => (p.id === project.id ? updatedProject : p));
       localStorage.setItem('projects', JSON.stringify(allProjects));
-    }
-  }, [tasks, project]);
-
-  const handleTaskMove = (result: DropResult) => {
-    if (!result.destination) return;
-
-    const sourceColumnId = result.source.droppableId;
-    const destColumnId = result.destination.droppableId;
-    const taskId = result.draggableId;
-
-    // Find the task that was moved
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-
-    // Update the task's status based on the destination column
-    const newStatus = columns.find((col) => col.id === destColumnId)?.status;
-    if (!newStatus) return;
-
-    setTasks((prevTasks) =>
-      prevTasks.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              status: newStatus,
-            }
-          : t
-      )
-    );
-  };
-
-  const handleAddTask = (columnId: string) => {
-    setSelectedTask(undefined);
-    setSelectedColumnId(columnId);
-    setIsModalOpen(true);
-  };
-
-  const handleEditTask = (task: Task) => {
-    setSelectedTask(task);
-    setSelectedColumnId(task.status);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteTask = (taskId: string) => {
-    setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
-  };
-
-  const handleSaveTask = (taskData: Partial<Task>) => {
-    if (selectedTask) {
-      // Edit existing task
-      setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === selectedTask.id ? { ...t, ...taskData } : t))
-      );
-    } else {
-      // Add new task
-      setTasks((prevTasks) => [
-        ...prevTasks,
-        {
-          ...taskData,
-          id: crypto.randomUUID(),
-          projectId: id!,
-          status: selectedColumnId as Task['status'],
-          createdAt: new Date().toISOString(),
-        } as ProjectTask,
-      ]);
     }
   };
 
@@ -434,11 +324,7 @@ export const ProjectDetailPage: FC = () => {
             />
           </svg>
         </BackButton>
-        <ProjectDropdown
-          projects={projects}
-          selectedProject={project}
-          onProjectSelect={(newProject) => navigate(`/projects/${newProject.id}`)}
-        />
+        <Title>{project.name}</Title>
       </Header>
 
       <Card>
@@ -553,26 +439,7 @@ export const ProjectDetailPage: FC = () => {
         </Section>
       </Card>
 
-      <Section>
-        <SectionTitle>Tasks</SectionTitle>
-        <TaskBoard
-          columns={columns}
-          users={users}
-          onTaskMove={handleTaskMove}
-          onAddTask={handleAddTask}
-          onEditTask={handleEditTask}
-          onDeleteTask={handleDeleteTask}
-        />
-      </Section>
-
-      <TaskModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveTask}
-        task={selectedTask}
-        users={users}
-        columnId={selectedColumnId}
-      />
+      <ProjectTasks projectId={project.id} onProgressUpdate={handleProgressUpdate} users={users} />
     </Container>
   );
 };
