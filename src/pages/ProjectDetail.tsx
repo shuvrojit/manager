@@ -65,40 +65,13 @@ const BackButton = styled.button`
   }
 `;
 
-const Card = styled.div`
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  max-width: 100%;
-  overflow-wrap: break-word;
-`;
-
-const CardHeader = styled.div`
+const ProjectHeader = styled.div`
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
-`;
-
-const StatusBadge = styled.span<{ status: Project['status'] }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-
-  ${({ status }) => {
-    switch (status) {
-      case 'active':
-        return 'background-color: #dcfce7; color: #166534;';
-      case 'completed':
-        return 'background-color: #dbeafe; color: #1e40af;';
-      case 'on-hold':
-        return 'background-color: #fef3c7; color: #92400e;';
-    }
-  }}
 `;
 
 const DateInfo = styled.div`
@@ -172,35 +145,6 @@ const Description = styled.p`
   word-break: break-word;
 `;
 
-const ProgressSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-width: 100%;
-`;
-
-const ProgressHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-  color: #6b7280;
-`;
-
-const ProgressBar = styled.div`
-  width: 100%;
-  height: 0.5rem;
-  background-color: #e5e7eb;
-  border-radius: 9999px;
-`;
-
-const ProgressFill = styled.div<{ progress: number }>`
-  height: 100%;
-  background-color: #2563eb;
-  border-radius: 9999px;
-  width: ${({ progress }) => `${progress}%`};
-`;
-
 // Helper function to calculate days until due date
 const getDaysUntilDueDate = (targetEndDate: string | undefined): number | undefined => {
   if (!targetEndDate) return undefined;
@@ -214,46 +158,6 @@ const getDaysUntilDueDate = (targetEndDate: string | undefined): number | undefi
   const timeDiff = dueDate.getTime() - today.getTime();
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
-
-const TeamMembersSection = styled.div`
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  max-width: 100%;
-`;
-
-const MemberCard = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 0.5rem;
-  background: #f3f4f6;
-  border-radius: 0.375rem;
-  max-width: 100%;
-`;
-
-const MemberAvatar = styled.img`
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-  flex-shrink: 0;
-`;
-
-const MemberInfo = styled.div`
-  min-width: 0;
-`;
-
-const MemberName = styled.div`
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const MemberRole = styled.div`
-  font-size: 0.75rem;
-  color: #6b7280;
-`;
 
 const TagsContainer = styled.div`
   display: flex;
@@ -327,117 +231,86 @@ export const ProjectDetailPage: FC = () => {
         <Title>{project.name}</Title>
       </Header>
 
-      <Card>
-        <CardHeader>
-          <StatusBadge status={project.status}>{project.status}</StatusBadge>
-          <DateInfo>
-            <DateItem>
-              <FaRegCalendarAlt />
-              <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
-            </DateItem>
-            {project.targetEndDate && (
-              <DueDateItem daysUntilDue={daysUntilDue}>
-                {daysUntilDue !== undefined && daysUntilDue <= 3 ? (
-                  <FaExclamationCircle />
-                ) : daysUntilDue !== undefined && daysUntilDue <= 7 ? (
-                  <FaExclamationTriangle />
-                ) : (
-                  <FaCalendarCheck />
+      <ProjectHeader>
+        <DateInfo>
+          <DateItem>
+            <FaRegCalendarAlt />
+            <span>Started: {new Date(project.startDate).toLocaleDateString()}</span>
+          </DateItem>
+          {project.targetEndDate && (
+            <DueDateItem daysUntilDue={daysUntilDue}>
+              {daysUntilDue !== undefined && daysUntilDue <= 3 ? (
+                <FaExclamationCircle />
+              ) : daysUntilDue !== undefined && daysUntilDue <= 7 ? (
+                <FaExclamationTriangle />
+              ) : (
+                <FaCalendarCheck />
+              )}
+              <span>
+                Due: {new Date(project.targetEndDate).toLocaleDateString()}
+                {daysUntilDue !== undefined && daysUntilDue <= 3 && (
+                  <span style={{ marginLeft: '0.5rem' }}>
+                    (
+                    {daysUntilDue === 0
+                      ? 'Due today!'
+                      : `${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''} left!`}
+                    )
+                  </span>
                 )}
-                <span>
-                  Due: {new Date(project.targetEndDate).toLocaleDateString()}
-                  {daysUntilDue !== undefined && daysUntilDue <= 3 && (
-                    <span style={{ marginLeft: '0.5rem' }}>
-                      (
-                      {daysUntilDue === 0
-                        ? 'Due today!'
-                        : `${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''} left!`}
-                      )
-                    </span>
-                  )}
-                  {daysUntilDue !== undefined && daysUntilDue > 3 && daysUntilDue <= 7 && (
-                    <span style={{ marginLeft: '0.5rem' }}>({daysUntilDue} days left)</span>
-                  )}
-                </span>
-              </DueDateItem>
-            )}
-          </DateInfo>
-        </CardHeader>
+                {daysUntilDue !== undefined && daysUntilDue > 3 && daysUntilDue <= 7 && (
+                  <span style={{ marginLeft: '0.5rem' }}>({daysUntilDue} days left)</span>
+                )}
+              </span>
+            </DueDateItem>
+          )}
+        </DateInfo>
+      </ProjectHeader>
 
+      <Section>
+        <SectionTitle>Description</SectionTitle>
+        <Description>{project.description}</Description>
+      </Section>
+
+      <Section>
+        <SectionTitle>Tags</SectionTitle>
+        <TagsContainer>
+          {project.tags.map((tag) => (
+            <Tag key={tag}>{tag}</Tag>
+          ))}
+        </TagsContainer>
+      </Section>
+
+      {project.budget && (
         <Section>
-          <SectionTitle>Description</SectionTitle>
-          <Description>{project.description}</Description>
-        </Section>
-
-        <ProgressSection>
-          <ProgressHeader>
-            <span>Progress</span>
-            <span>{project.progress}%</span>
-          </ProgressHeader>
-          <ProgressBar>
-            <ProgressFill progress={project.progress} />
-          </ProgressBar>
-        </ProgressSection>
-
-        <Section>
-          <SectionTitle>Team Members</SectionTitle>
-          <TeamMembersSection>
-            {project.team.map((userId) => {
-              const user = users.find((u) => u.id === userId);
-              return user ? (
-                <MemberCard key={user.id}>
-                  <MemberAvatar src={user.avatar} alt={user.name} />
-                  <MemberInfo>
-                    <MemberName>{user.name}</MemberName>
-                    <MemberRole>{user.role}</MemberRole>
-                  </MemberInfo>
-                </MemberCard>
-              ) : null;
-            })}
-          </TeamMembersSection>
-        </Section>
-
-        <Section>
-          <SectionTitle>Tags</SectionTitle>
-          <TagsContainer>
-            {project.tags.map((tag) => (
-              <Tag key={tag}>{tag}</Tag>
-            ))}
-          </TagsContainer>
-        </Section>
-
-        {project.budget && (
-          <Section>
-            <SectionTitle>Budget</SectionTitle>
-            <div style={{ fontSize: '1.25rem', color: '#047857' }}>
-              ${project.budget.toLocaleString()}
-            </div>
-          </Section>
-        )}
-
-        <Section>
-          <SectionTitle>Project Timeline</SectionTitle>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div>
-              <strong>Created:</strong> {new Date(project.createdAt).toLocaleString()} by{' '}
-              {users.find((u) => u.id === project.createdBy)?.name}
-            </div>
-            <div>
-              <strong>Last Updated:</strong> {new Date(project.updatedAt).toLocaleString()}
-            </div>
-            {project.actualEndDate && (
-              <div>
-                <strong>Completed:</strong> {new Date(project.actualEndDate).toLocaleString()}
-              </div>
-            )}
+          <SectionTitle>Budget</SectionTitle>
+          <div style={{ fontSize: '1.25rem', color: '#047857' }}>
+            ${project.budget.toLocaleString()}
           </div>
         </Section>
+      )}
 
-        <Section>
-          <SectionTitle>Client</SectionTitle>
-          <div>Client ID: {project.clientId}</div>
-        </Section>
-      </Card>
+      <Section>
+        <SectionTitle>Project Timeline</SectionTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div>
+            <strong>Created:</strong> {new Date(project.createdAt).toLocaleString()} by{' '}
+            {users.find((u) => u.id === project.createdBy)?.name}
+          </div>
+          <div>
+            <strong>Last Updated:</strong> {new Date(project.updatedAt).toLocaleString()}
+          </div>
+          {project.actualEndDate && (
+            <div>
+              <strong>Completed:</strong> {new Date(project.actualEndDate).toLocaleString()}
+            </div>
+          )}
+        </div>
+      </Section>
+
+      <Section>
+        <SectionTitle>Client</SectionTitle>
+        <div>Client ID: {project.clientId}</div>
+      </Section>
 
       <ProjectTasks projectId={project.id} onProgressUpdate={handleProgressUpdate} users={users} />
     </Container>
